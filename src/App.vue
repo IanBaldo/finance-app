@@ -6,22 +6,26 @@ import KpiCards from './components/KpiCards.vue';
 import IncomeAllocation from './components/IncomeAllocation.vue';
 import ProjectionChart from './components/ProjectionChart.vue';
 import AddCommitmentModal from './components/AddCommitmentModal.vue';
-import UnsavedChangesModal from './components/UnsavedChangesModal.vue'; // 1. Import the component
+import UnsavedChangesModal from './components/UnsavedChangesModal.vue';
+import PasswordModal from './components/PasswordModal.vue';
 import { formatBRL } from './utils/formatters';
+import { isEncryptedFile, encryptCsv, decryptCsv } from './utils/crypto';
 
 const store = useFinanceStore();
 const showModal = ref(false);
 const showCloseConfirm = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
+// Password modal state for export / import encryption
+const showPasswordModal = ref(false);
+const passwordModalMode = ref<'export' | 'import'>('export');
+const passwordErrorMessage = ref('');
+const pendingImportContent = ref('');
 
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-  // If there are unsaved changes, prevent immediate close and show your Vue modal
   if (!store.isDataSaved) {
-    e.preventDefault(); // Stops the window from closing instantly
-    e.returnValue = ''; // Required for legacy support / browser requirements
-    
-    // Trigger your custom Vue component modal to show up
+    e.preventDefault();
+    e.returnValue = '';
     store.showUnsavedModal = true;
   }
 };
@@ -30,14 +34,59 @@ onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
 });
 
+const handleExportClick = () => {
+  passwordModalMode.value = 'export';
+  passwordErrorMessage.value = '';
+  showPasswordModal.value = true;
+};
+
+const handlePasswordSubmit = async ({ password, isEncrypted }: { password: string; isEncrypted: boolean }) => {
+  if (passwordModalMode.value === 'export') {
+    const rawCsv = store.getCSVContent();
+    if (isEncrypted && password) {
+      try {
+        const encryptedContent = await encryptCsv(rawCsv, password);
+        store.downloadCSVFile(encryptedContent, 'financial_database_encrypted.csv');
+        showPasswordModal.value = false;
+      } catch (err: any) {
+        passwordErrorMessage.value = 'Failed to encrypt export file.';
+      }
+    } else {
+      store.exportDataCSV();
+      showPasswordModal.value = false;
+    }
+  } else {
+    // Import mode
+    try {
+      passwordErrorMessage.value = '';
+      const decryptedCsv = await decryptCsv(pendingImportContent.value, password);
+      store.importDataCSV(decryptedCsv);
+      showPasswordModal.value = false;
+      pendingImportContent.value = '';
+    } catch (err: any) {
+      passwordErrorMessage.value = err.message || 'Incorrect password.';
+    }
+  }
+};
+
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
-        store.importDataCSV(e.target.result as string);
+        const content = e.target.result as string;
+        if (isEncryptedFile(content)) {
+          pendingImportContent.value = content;
+          passwordModalMode.value = 'import';
+          passwordErrorMessage.value = '';
+          showPasswordModal.value = true;
+        } else {
+          store.importDataCSV(content);
+        }
       }
+      // Reset input value so the same file can be selected again if needed
+      target.value = '';
     };
     reader.readAsText(target.files[0]);
   }
@@ -61,7 +110,7 @@ const handleFileUpload = (event: Event) => {
           <button @click="showCloseConfirm = true" class="btn-secondary">Close Month</button>
           
           <!-- Export Data Button -->
-          <button @click="store.exportDataCSV()" class="btn-secondary">Export Data</button>
+          <button @click="handleExportClick" class="btn-secondary">Export Data</button>
 
           <!-- Import Data Button -->
           <button @click="fileInputRef?.click()" class="btn-secondary">Import CSV</button>
@@ -171,6 +220,15 @@ const handleFileUpload = (event: Event) => {
 
     <!-- 2. Render the Unsaved Changes Modal Component Here -->
     <UnsavedChangesModal />
+
+    <!-- Password Modal for Encrypted Export / Import -->
+    <PasswordModal
+      :show="showPasswordModal"
+      :mode="passwordModalMode"
+      :error-message="passwordErrorMessage"
+      @close="showPasswordModal = false"
+      @submit="handlePasswordSubmit"
+    />
 
     <button class="fab" @click="showModal = true" aria-label="Add Commitment">+</button>
     <AddCommitmentModal v-if="showModal" @close="showModal = false" />

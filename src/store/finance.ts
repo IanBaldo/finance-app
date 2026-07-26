@@ -279,7 +279,7 @@ export const useFinanceStore = defineStore('finance', () => {
     isDataSaved.value = false;
   }
 
-  function exportDataCSV() {
+  function getCSVContent(): string {
     const rows = [
       ['MonthKey', 'RecordType', 'ID', 'Name', 'Val1', 'Val2', 'Val3', 'Val4']
     ];
@@ -297,17 +297,25 @@ export const useFinanceStore = defineStore('finance', () => {
       });
     });
 
-    const csvContent = rows.map(e => e.join(',')).join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    return rows.map(e => e.join(',')).join('\n');
+  }
+
+  function downloadCSVFile(content: string, filename = 'financial_database.csv') {
+    const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.setAttribute('href', url);
-    link.setAttribute('download', `financial_database.csv`);
+    link.setAttribute('download', filename);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 
     isDataSaved.value = true;
+  }
+
+  function exportDataCSV() {
+    const csvContent = getCSVContent();
+    downloadCSVFile(csvContent, 'financial_database.csv');
   }
 
   function importDataCSV(csvText: string) {
@@ -359,6 +367,7 @@ export const useFinanceStore = defineStore('finance', () => {
     activeMonthKey, availableMonths, currentMonthLabel, income, balance, cards, expenses, commitments, savingsGoal,
     fixedExpenses, creditCommitments, monthlyCommitments,
     availableToSpend, savingsTargetAmount, expectedBalance, projection, isDataSaved, showUnsavedModal,
-    addCommitment, deleteCommitment, addCard, deleteCard, addExpense, deleteExpense, closeMonth, exportDataCSV, importDataCSV, updateCardBalance
+    addCommitment, deleteCommitment, addCard, deleteCard, addExpense, deleteExpense, closeMonth, exportDataCSV, importDataCSV, updateCardBalance,
+    getCSVContent, downloadCSVFile
   };
 });
