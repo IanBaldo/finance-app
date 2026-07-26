@@ -49,27 +49,19 @@ const chartOption = computed(() => {
       splitLine: { lineStyle: { type: 'dashed', color: '#E5E7EB' } },
       axisLabel: { color: '#6B7280', fontFamily: 'Inter' }
     },
-    series: [
-      {
-        name: 'Nubank',
-        type: 'bar',
-        stack: 'total',
-        barWidth: '40%',
-        data: data.map(d => ({
-          value: d.nubank,
-          itemStyle: { color: '#7C3AED', opacity: d.isCurrent ? 1 : 0.35 }
-        }))
-      },
-      {
-        name: 'Santander',
-        type: 'bar',
-        stack: 'total',
-        data: data.map(d => ({
-          value: d.santander,
-          itemStyle: { color: '#ec5c5c', opacity: d.isCurrent ? 1 : 0.35 }
-        }))
-      }
-    ]
+    series: store.cards.map(card => ({
+      name: card.name,
+      type: 'bar',
+      stack: 'total',
+      barWidth: '40%',
+      data: data.map(d => ({
+        value: (d as Record<string, any>)[card.id] || 0,
+        itemStyle: { 
+          color: card.color || '#2563eb', 
+          opacity: d.isCurrent ? 1 : 0.35 
+        }
+      }))
+    }))
   };
 });
 </script>

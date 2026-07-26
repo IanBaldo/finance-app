@@ -8,11 +8,15 @@ import ProjectionChart from './components/ProjectionChart.vue';
 import AddCommitmentModal from './components/AddCommitmentModal.vue';
 import UnsavedChangesModal from './components/UnsavedChangesModal.vue';
 import PasswordModal from './components/PasswordModal.vue';
+import AddCardModal from './components/AddCardModal.vue';
+import AddExpenseModal from './components/AddExpenseModal.vue';
 import { formatBRL } from './utils/formatters';
 import { isEncryptedFile, encryptCsv, decryptCsv } from './utils/crypto';
 
 const store = useFinanceStore();
 const showModal = ref(false);
+const showAddCardModal = ref(false);
+const showAddExpenseModal = ref(false);
 const showCloseConfirm = ref(false);
 const fileInputRef = ref<HTMLInputElement | null>(null);
 
@@ -85,7 +89,6 @@ const handleFileUpload = (event: Event) => {
           store.importDataCSV(content);
         }
       }
-      // Reset input value so the same file can be selected again if needed
       target.value = '';
     };
     reader.readAsText(target.files[0]);
@@ -132,14 +135,20 @@ const handleFileUpload = (event: Event) => {
         
         <!-- Commitments Section -->
         <div class="base-card span-2">
-          <div class="flex justify-between items-center mb-6">
+          <div class="flex justify-between items-center mb-8">
             <h3>Active Commitments</h3>
-            <button class="btn-primary" @click="showModal = true">+ Add New</button>
+            <div class="flex gap-4">
+              <button class="btn-secondary" @click="showAddCardModal = true">+ Add Card</button>
+              <button class="btn-primary" @click="showModal = true">+ Add Commitment</button>
+            </div>
           </div>
           
           <div v-for="card in store.cards" :key="card.id" class="mb-6 card-section">
             <div class="flex justify-between items-center mb-4 card-header-row">
-              <h4 class="text-secondary card-title" :style="{ color: `var(--${card.id})`}">{{ card.name }}</h4>
+              <div class="flex items-center gap-3">
+                <h4 class="text-secondary card-title" :style="{ color: card.color}">{{ card.name }}</h4>
+                <button @click="store.deleteCard(card.id)" class="btn-icon-danger text-xs" title="Delete Card">x</button>
+              </div>
               <div class="flex items-center gap-2">
                 <span class="text-sm text-secondary">Balance:</span>
                 <input type="number" v-model.number="card.currentBalance" class="inline-input w-28 text-right" />
@@ -174,11 +183,17 @@ const handleFileUpload = (event: Event) => {
 
         <!-- Fixed Expenses Section -->
         <div class="base-card">
-          <h3 class="mb-6">Fixed Expenses</h3>
+          <div class="flex justify-between items-center mb-8">
+            <h3>Fixed Expenses</h3>
+            <button class="btn-primary" @click="showAddExpenseModal = true">+ Add Expense</button>
+          </div>
           <div class="expenses-list grid gap-4">
             <div v-for="exp in store.expenses" :key="exp.id" class="expense-item flex flex-col gap-2">
               <div class="flex justify-between items-center">
-                <div class="font-semibold">{{ exp.name }}</div>
+                <div class="flex items-center gap-2">
+                  <div class="font-semibold">{{ exp.name }}</div>
+                  <button @click="store.deleteExpense(exp.id)" class="btn-icon-danger btn-xs" title="Remove Expense">x</button>
+                </div>
                 <div class="text-sm font-medium" :class="{
                   'text-success': exp.actual < exp.expected,
                   'text-danger': exp.actual > exp.expected,
@@ -218,10 +233,9 @@ const handleFileUpload = (event: Event) => {
       </div>
     </div>
 
-    <!-- 2. Render the Unsaved Changes Modal Component Here -->
+    <!-- Render Modal Components -->
     <UnsavedChangesModal />
 
-    <!-- Password Modal for Encrypted Export / Import -->
     <PasswordModal
       :show="showPasswordModal"
       :mode="passwordModalMode"
@@ -230,6 +244,10 @@ const handleFileUpload = (event: Event) => {
       @submit="handlePasswordSubmit"
     />
 
+    <AddCardModal v-if="showAddCardModal" @close="showAddCardModal = false" />
+
+    <AddExpenseModal v-if="showAddExpenseModal" @close="showAddExpenseModal = false" />
+
     <button class="fab" @click="showModal = true" aria-label="Add Commitment">+</button>
     <AddCommitmentModal v-if="showModal" @close="showModal = false" />
   </div>
@@ -237,6 +255,11 @@ const handleFileUpload = (event: Event) => {
 
 <style>
 /* Keep your existing style blocks */
+.btn-xs {
+  width: 24px;
+  height: 24px;
+  font-size: 14px;
+}
 .dashboard-layout { min-height: 100vh; padding-bottom: 64px; }
 .top-nav {
   background: var(--surface);

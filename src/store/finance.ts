@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
-export interface Card { id: string; name: string; currentBalance: number; limit?: number; }
+export interface Card { id: string; name: string; currentBalance: number; limit?: number; color?: string; }
 export interface Expense { id: string; name: string; expected: number; actual: number; }
 export interface Commitment {
   id: string; description: string; cardId: string; purchaseDate: string;
@@ -14,7 +14,7 @@ export const useFinanceStore = defineStore('finance', () => {
   const activeMonthKey = ref(new Date().toISOString().slice(0, 7)); // e.g. "2026-08"
   const isDataSaved = ref(true); // Tracks whether changes have been exported/saved
   const showUnsavedModal = ref(false); // Controls the close warning modal visibility
-  
+
   const monthDatabase = ref<Record<string, {
     income: number;
     balance: number;
@@ -28,8 +28,8 @@ export const useFinanceStore = defineStore('finance', () => {
       balance: 0,
       savingsGoal: 0,
       cards: [
-        { id: 'nubank', name: 'Nubank', currentBalance: 0, limit: 0 },
-        { id: 'santander', name: 'Santander', currentBalance: 0, limit: 0 }
+        { id: 'nubank', name: 'Nubank', currentBalance: 0, color: '#7C3AED' },
+        { id: 'santander', name: 'Santander', currentBalance: 0, color: '#EC5C5C' }
       ],
       expenses: [
         { id: '1', name: 'Rent', expected: 0, actual: 0 },
@@ -87,7 +87,7 @@ export const useFinanceStore = defineStore('finance', () => {
     return formatted.charAt(0).toUpperCase() + formatted.slice(1);
   });
 
-  const fixedExpenses = computed(() => 
+  const fixedExpenses = computed(() =>
     expenses.value.reduce((acc, exp) => acc + exp.actual, 0)
   );
 
@@ -112,7 +112,7 @@ export const useFinanceStore = defineStore('finance', () => {
     return commitmentsTotal + totalCardBalances;
   });
 
-  const availableToSpend = computed(() => 
+  const availableToSpend = computed(() =>
     income.value - fixedExpenses.value - monthlyCommitments.value
   );
 
@@ -120,8 +120,8 @@ export const useFinanceStore = defineStore('finance', () => {
     get: () => savingsGoal.value,
     set: (val: number) => { savingsGoal.value = val; isDataSaved.value = false; }
   });
-  
-  const expectedBalance = computed(() => 
+
+  const expectedBalance = computed(() =>
     balance.value + availableToSpend.value
   );
 
@@ -129,12 +129,12 @@ export const useFinanceStore = defineStore('finance', () => {
     const months = [];
     const [y, m] = activeMonthKey.value.split('-');
     const baseDate = new Date(Number(y), Number(m) - 1, 1);
-    
+
     const allCardIds = cards.value.map(card => card.id);
 
     for (let i = 0; i < 6; i++) {
       const cardTotals: Record<string, number> = {};
-      
+
       allCardIds.forEach(id => {
         cardTotals[id] = 0;
       });
@@ -197,7 +197,7 @@ export const useFinanceStore = defineStore('finance', () => {
     const index = commitments.value.findIndex(x => x.id === id);
     if (index !== -1) {
       const commitment = commitments.value[index];
-      
+
       const targetCard = cards.value.find(card => card.id === commitment.cardId);
       if (targetCard) {
         targetCard.currentBalance = Math.max(0, targetCard.currentBalance - commitment.monthlyAmount);
@@ -212,8 +212,10 @@ export const useFinanceStore = defineStore('finance', () => {
     const id = card.name.toLowerCase().replace(/\s+/g, '_') + '_' + Math.random().toString(36).substr(2, 4);
     cards.value.push({
       id,
-      currentBalance: 0,
-      ...card
+      name: card.name,
+      currentBalance: card.currentBalance || 0,
+      limit: card.limit || 0,
+      color: card.color || '#3B82F6'
     });
     isDataSaved.value = false;
   }
@@ -221,8 +223,8 @@ export const useFinanceStore = defineStore('finance', () => {
   function deleteCard(id: string) {
     const index = cards.value.findIndex(x => x.id === id);
     if (index !== -1) {
+      commitments.value.filter(c => c.cardId !== id);
       cards.value.splice(index, 1);
-      commitments.value = commitments.value.filter(c => c.cardId !== id);
       isDataSaved.value = false;
     }
   }
@@ -245,11 +247,11 @@ export const useFinanceStore = defineStore('finance', () => {
 
   function closeMonth() {
     const [y, m] = activeMonthKey.value.split('-').map(Number);
-    const nextDate = new Date(y, m, 1); 
+    const nextDate = new Date(y, m, 1);
     const nextKey = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, '0')}`;
 
     const newExpectedBal = expectedBalance.value;
-    
+
     const rolledCommitments = commitments.value
       .map(c => {
         if (!c.recurring) {
@@ -287,7 +289,7 @@ export const useFinanceStore = defineStore('finance', () => {
     Object.entries(monthDatabase.value).forEach(([mKey, data]) => {
       rows.push([mKey, 'GLOBAL', 'meta', '', String(data.income), String(data.balance), String(data.savingsGoal), '']);
       data.cards.forEach(card => {
-        rows.push([mKey, 'CARD', card.id, card.name, String(card.currentBalance), String(card.limit || 0), '', '']);
+        rows.push([mKey, 'CARD', card.id, card.name, String(card.currentBalance), String(card.limit || 0), card.color || '', '']);
       });
       data.expenses.forEach(exp => {
         rows.push([mKey, 'EXPENSE', exp.id, exp.name, String(exp.expected), String(exp.actual), '', '']);
@@ -336,7 +338,7 @@ export const useFinanceStore = defineStore('finance', () => {
         newDb[mKey].balance = Number(f2) || 0;
         newDb[mKey].savingsGoal = Number(f3) || 0;
       } else if (type === 'CARD') {
-        newDb[mKey].cards.push({ id, name, currentBalance: Number(f1), limit: Number(f2) });
+        newDb[mKey].cards.push({ id, name, currentBalance: Number(f1), limit: Number(f2), color: f3 || undefined });
       } else if (type === 'EXPENSE') {
         newDb[mKey].expenses.push({ id, name, expected: Number(f1), actual: Number(f2) });
       } else if (type === 'COMMITMENT') {
