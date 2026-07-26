@@ -1,0 +1,46 @@
+{
+  "name": "finance-dashboard",
+  "private": true,
+  "version": "26.7.25",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "desktop": "vite build && electron electron/main.cjs",
+    "pack:win": "vite build && electron-builder --win"
+  },
+  "build": {
+    "appId": "com.financial.planning",
+    "productName": "Financial Planning",
+    "icon": "public/icon.ico",
+    "directories": {
+      "output": "release"
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/main.cjs",
+      "electron/preload.cjs",
+      "electron/icon.png",
+      "electron/icon.ico"
+    ]
+  },
+  "dependencies": {
+    "echarts": "^5.5.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.21",
+    "vue-echarts": "^6.6.9"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.4",
+    "electron": "^43.2.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.2.2",
+    "vite": "^5.2.0",
+    "vue-tsc": "^2.0.6"
+  }
+}
