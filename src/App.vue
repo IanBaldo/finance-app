@@ -10,7 +10,8 @@ import UnsavedChangesModal from './components/modals/UnsavedChangesModal.vue';
 import PasswordModal from './components/modals/PasswordModal.vue';
 import AddCardModal from './components/modals/AddCardModal.vue';
 import AddExpenseModal from './components/modals/AddExpenseModal.vue';
-import { formatBRL } from './utils/formatters';
+import { formatBRL, formatBRLWhole } from './utils/formatters';
+import FormattedNumberInput from './components/FormattedNumberInput.vue';
 import { isEncryptedFile, encryptCsv, decryptCsv } from './utils/crypto';
 
 const store = useFinanceStore();
@@ -98,137 +99,191 @@ const handleFileUpload = (event: Event) => {
 
 <template>
   <div class="dashboard-layout">
-    <header class="top-nav">
-      <div class="container nav-content flex items-center justify-between">
-        <h2>Financial Planning</h2>
-        <div class="flex items-center gap-4">
-          <!-- Active Month / History Selector -->
-          <select v-model="store.activeMonthKey" class="month-selector">
-            <option v-for="m in store.availableMonths" :key="m.key" :value="m.key">
-              {{ m.label }}
-            </option>
-          </select>
-          
-          <!-- Close Month Button -->
-          <button @click="showCloseConfirm = true" class="btn-secondary">Close Month</button>
-          
-          <!-- Export Data Button -->
-          <button @click="handleExportClick" class="btn-secondary">Export Data</button>
+    <!-- Navbar -->
+    <nav class="navbar app-navbar" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <span class="navbar-item">
+            <h2>Financial Planning</h2>
+          </span>
+        </div>
 
-          <!-- Import Data Button -->
-          <button @click="fileInputRef?.click()" class="btn-secondary">Import CSV</button>
-          <input type="file" ref="fileInputRef" @change="handleFileUpload" accept=".csv" style="display: none;" />
+        <div class="navbar-end">
+          <div class="navbar-item" style="gap: 10px; display: flex; flex-wrap: wrap;">
+            <!-- Month selector -->
+            <div class="select is-small">
+              <select v-model="store.activeMonthKey">
+                <option v-for="m in store.availableMonths" :key="m.key" :value="m.key">
+                  {{ m.label }}
+                </option>
+              </select>
+            </div>
+
+            <button @click="showCloseConfirm = true" class="button is-small is-app-secondary">Close Month</button>
+            <button @click="handleExportClick" class="button is-small is-app-secondary">Export Data</button>
+            <button @click="fileInputRef?.click()" class="button is-small is-app-secondary">Import CSV</button>
+            <input type="file" ref="fileInputRef" @change="handleFileUpload" accept=".csv" style="display: none;" />
+          </div>
         </div>
       </div>
-    </header>
+    </nav>
 
-    <main class="container content-grid">
+    <!-- Main content -->
+    <main class="container py-5">
       <!-- Row 1: KPIs -->
       <KpiCards />
 
-      <!-- Row 2: Charts -->
-      <IncomeAllocation />
-      <ProjectionChart />
+      <!-- Row 2: Income Allocation (full width) -->
+      <div class="mt-5">
+        <IncomeAllocation />
+      </div>
+
+      <!-- Row 3: Projection Chart (full width) -->
+      <div class="mt-5">
+        <ProjectionChart />
+      </div>
 
       <!-- Row 3: Detail Sections -->
-      <div class="grid layout-3-col mt-6">
-        
-        <!-- Commitments Section -->
-        <div class="base-card span-2">
-          <div class="flex justify-between items-center mb-8">
-            <h3>Active Commitments</h3>
-            <div class="flex gap-4">
-              <button class="btn-secondary" @click="showAddCardModal = true">+ Add Card</button>
-              <button class="btn-primary" @click="showModal = true">+ Add Commitment</button>
-            </div>
-          </div>
-          
-          <div v-for="card in store.cards" :key="card.id" class="mb-6 card-section">
-            <div class="flex justify-between items-center mb-4 card-header-row">
-              <div class="flex items-center gap-3">
-                <h4 class="text-secondary card-title" :style="{ color: card.color}">{{ card.name }}</h4>
-                <button @click="store.deleteCard(card.id)" class="btn-icon-danger text-xs" title="Delete Card">x</button>
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="text-sm text-secondary">Balance:</span>
-                <input type="number" v-model.number="card.currentBalance" class="inline-input w-28 text-right" />
-              </div>
-            </div>
+      <div class="columns mt-2">
 
-            <div class="commitments-list">
-              <div v-for="c in store.commitments.filter(x => x.cardId === card.id)" :key="c.id" class="commitment-item">
-                <div class="flex justify-between items-center">
-                  <div>
-                    <div class="font-semibold">{{ c.description }}</div>
-                    <div class="text-sm text-secondary mt-1">
-                      <span v-if="c.recurring">Recurring</span>
-                      <span v-else>{{ c.currentInstallment }} of {{ c.installments }} installments</span>
-                    </div>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <div class="text-right">
-                      <div class="font-semibold">{{ formatBRL(c.monthlyAmount) }} / mo</div>
-                      <div class="text-sm text-secondary mt-1" v-if="!c.recurring">Total: {{ formatBRL(c.totalAmount) }}</div>
-                    </div>
-                    <button @click="store.deleteCommitment(c.id)" class="btn-icon-danger" title="Remove Commitment">×</button>
+        <!-- Commitments Section -->
+        <div class="column is-8">
+          <div class="app-card">
+            <div class="level mb-5">
+              <div class="level-left">
+                <div class="level-item">
+                  <h3>Active Commitments</h3>
+                </div>
+              </div>
+              <div class="level-right">
+                <div class="level-item">
+                  <div class="buttons">
+                    <button class="button is-small is-app-secondary" @click="showAddCardModal = true">+ Add Card</button>
+                    <button class="button is-small is-app-primary" @click="showModal = true">+ Add Commitment</button>
                   </div>
                 </div>
               </div>
-              <div v-if="!store.commitments.filter(x => x.cardId === card.id).length" class="text-sm text-secondary py-3 px-2">
-                No active commitments.
+            </div>
+
+            <div v-for="card in store.cards" :key="card.id" class="card-section mb-4">
+              <div class="level mb-3">
+                <div class="level-left">
+                  <div class="level-item">
+                    <span class="card-title" :style="{ color: card.color }">{{ card.name }}</span>
+                    <button @click="store.deleteCard(card.id)" class="btn-icon-danger ml-2" title="Delete Card">×</button>
+                  </div>
+                </div>
+                <div class="level-right">
+                  <div class="level-item">
+                    <span class="text-secondary is-size-7 mr-2">Balance:</span>
+                    <FormattedNumberInput v-model="card.currentBalance" class-name="inline-input w-28 has-text-right" />
+                  </div>
+                </div>
+              </div>
+
+              <div class="commitments-list">
+                <div
+                  v-for="c in store.commitments.filter(x => x.cardId === card.id)"
+                  :key="c.id"
+                  class="commitment-item"
+                >
+                  <div class="level is-mobile">
+                    <div class="level-left">
+                      <div class="level-item">
+                        <div>
+                          <div class="has-text-weight-semibold">{{ c.description }}</div>
+                          <div class="is-size-7 text-secondary mt-1">
+                            <span v-if="c.recurring">Recurring</span>
+                            <span v-else>{{ c.currentInstallment }} of {{ c.installments }} installments</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="level-right">
+                      <div class="level-item">
+                        <div class="has-text-right mr-3">
+                          <div class="has-text-weight-semibold">{{ formatBRLWhole(c.monthlyAmount) }} / mo</div>
+                          <div class="is-size-7 text-secondary mt-1" v-if="!c.recurring">Total: {{ formatBRLWhole(c.totalAmount) }}</div>
+                        </div>
+                        <button @click="store.deleteCommitment(c.id)" class="btn-icon-danger" title="Remove Commitment">×</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="!store.commitments.filter(x => x.cardId === card.id).length" class="is-size-7 text-secondary py-3 px-2">
+                  No active commitments.
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Fixed Expenses Section -->
-        <div class="base-card">
-          <div class="flex justify-between items-center mb-8">
-            <h3>Fixed Expenses</h3>
-            <button class="btn-primary" @click="showAddExpenseModal = true">+ Add Expense</button>
-          </div>
-          <div class="expenses-list grid gap-4">
-            <div v-for="exp in store.expenses" :key="exp.id" class="expense-item flex flex-col gap-2">
-              <div class="flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                  <div class="font-semibold">{{ exp.name }}</div>
-                  <button @click="store.deleteExpense(exp.id)" class="btn-icon-danger btn-xs" title="Remove Expense">x</button>
-                </div>
-                <div class="text-sm font-medium" :class="{
-                  'text-success': exp.actual < exp.expected,
-                  'text-danger': exp.actual > exp.expected,
-                  'text-secondary': exp.actual === exp.expected
-                }">
-                  {{ exp.actual - exp.expected === 0 ? 'On Track' : formatBRL(Math.abs(exp.actual - exp.expected)) + (exp.actual > exp.expected ? ' Over' : ' Under') }}
+        <div class="column is-4">
+          <div class="app-card">
+            <div class="level mb-5">
+              <div class="level-left">
+                <div class="level-item">
+                  <h3>Fixed Expenses</h3>
                 </div>
               </div>
-              
-              <div class="flex items-center justify-between mt-2 gap-4">
-                <div class="flex flex-col w-full">
-                  <label class="text-xs text-secondary mb-1">Expected</label>
-                  <input type="number" v-model.number="exp.expected" class="inline-input w-full" />
+              <div class="level-right">
+                <div class="level-item">
+                  <button class="button is-small is-app-primary" @click="showAddExpenseModal = true">+ Add Expense</button>
                 </div>
-                <div class="flex flex-col w-full">
-                  <label class="text-xs text-secondary mb-1">Actual</label>
-                  <input type="number" v-model.number="exp.actual" class="inline-input w-full" />
+              </div>
+            </div>
+
+            <div class="expense-list">
+              <div v-for="exp in store.expenses" :key="exp.id" class="expense-item mb-3">
+                <div class="level is-mobile mb-2">
+                  <div class="level-left">
+                    <div class="level-item">
+                      <span class="has-text-weight-semibold mr-2">{{ exp.name }}</span>
+                      <button @click="store.deleteExpense(exp.id)" class="btn-icon-danger" style="font-size:16px; width:24px; height:24px;" title="Remove Expense">×</button>
+                    </div>
+                  </div>
+                  <div class="level-right">
+                    <div class="level-item">
+                      <span class="is-size-7 has-text-weight-medium" :class="{
+                        'text-success': exp.actual < exp.expected,
+                        'text-danger': exp.actual > exp.expected,
+                        'text-secondary': exp.actual === exp.expected
+                      }">
+                        {{ exp.actual - exp.expected === 0 ? 'On Track' : formatBRL(Math.abs(exp.actual - exp.expected)) + (exp.actual > exp.expected ? ' Over' : ' Under') }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="columns is-mobile is-variable is-2">
+                  <div class="column">
+                    <label class="is-size-7 text-secondary mb-1" style="display:block;">Expected</label>
+                    <input type="number" v-model.number="exp.expected" class="inline-input" style="width:100%;" />
+                  </div>
+                  <div class="column">
+                    <label class="is-size-7 text-secondary mb-1" style="display:block;">Actual</label>
+                    <input type="number" v-model.number="exp.actual" class="inline-input" style="width:100%;" />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
       </div>
     </main>
-    
+
     <!-- Close Month Confirmation Modal -->
     <div v-if="showCloseConfirm" class="modal-backdrop" @click.self="showCloseConfirm = false">
-      <div class="base-card modal-content">
-        <h3 class="mb-6">Close Month Confirmation</h3>
-        <p class="text-secondary mb-6 text-sm leading-relaxed">
+      <div class="app-card modal-content-box">
+        <h3 class="mb-4">Close Month Confirmation</h3>
+        <p class="text-secondary mb-5 is-size-7" style="line-height:1.6;">
           Are you sure you want to close <strong>{{ store.currentMonthLabel }}</strong>? This will archive your financial snapshot, rollover your expected balance, advance installment tracking, and reset fixed expenses for the next month.
         </p>
-        <div class="flex justify-between gap-4">
-          <button @click="showCloseConfirm = false" class="btn-secondary w-full">Cancel</button>
-          <button @click="store.closeMonth(); showCloseConfirm = false" class="btn-primary w-full">Confirm Close</button>
+        <div class="buttons">
+          <button @click="showCloseConfirm = false" class="button is-app-secondary is-fullwidth">Cancel</button>
+          <button @click="store.closeMonth(); showCloseConfirm = false" class="button is-app-primary is-fullwidth">Confirm Close</button>
         </div>
       </div>
     </div>
@@ -245,7 +300,6 @@ const handleFileUpload = (event: Event) => {
     />
 
     <AddCardModal v-if="showAddCardModal" @close="showAddCardModal = false" />
-
     <AddExpenseModal v-if="showAddExpenseModal" @close="showAddExpenseModal = false" />
 
     <button class="fab" @click="showModal = true" aria-label="Add Commitment">+</button>
@@ -254,56 +308,18 @@ const handleFileUpload = (event: Event) => {
 </template>
 
 <style>
-/* Keep your existing style blocks */
-.btn-xs {
-  width: 24px;
-  height: 24px;
-  font-size: 14px;
-}
-.dashboard-layout { min-height: 100vh; padding-bottom: 64px; }
-.top-nav {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
-  padding: 16px 0;
-  margin-bottom: 32px;
-}
-.container { max-width: 1280px; margin: 0 auto; padding: 0 24px; }
-.content-grid { display: grid; gap: 24px; }
-.layout-3-col { grid-template-columns: 2fr 1fr; gap: 24px; }
-@media (max-width: 1279px) { .layout-3-col { grid-template-columns: 1fr; } }
-@media (max-width: 768px) { .kpi-grid { grid-template-columns: 1fr 1fr; } }
-.inline-input {
-  border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px;
-  font-family: inherit; font-size: 14px; background: var(--surface); transition: all 0.2s;
-}
-.inline-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12); background: var(--bg); }
-.w-28 { width: 110px; }
-.w-full { width: 100%; }
-.flex-col { flex-direction: column; }
-.month-selector { border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; background: var(--surface); font-family: var(--font-sans); cursor: pointer; }
-.icon-btn { background: none; border: none; font-size: 20px; cursor: pointer; }
-.btn-primary { background: var(--primary); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; transition: opacity 0.2s; }
-.btn-primary:hover { opacity: 0.9; }
-.btn-secondary { background: var(--surface); color: var(--text-primary); border: 1px solid var(--border); padding: 8px 16px; border-radius: 6px; font-weight: 500; cursor: pointer; }
-.btn-secondary:hover { background: var(--bg); }
-.modal-backdrop { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(17, 24, 39, 0.5); display: flex; align-items: center; justify-content: center; z-index: 100; backdrop-filter: blur(2px); }
-.modal-content { width: 100%; max-width: 450px; }
-.btn-icon-danger { background: none; border: none; color: var(--text-secondary); font-size: 24px; cursor: pointer; border-radius: 6px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
-.btn-icon-danger:hover { color: var(--danger); background: var(--bg); }
-.card-section { padding: 18px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
-.card-section:last-child { margin-bottom: 0; }
-.card-title { font-size: 16px; font-weight: 600; }
-.commitments-list { display: flex; flex-direction: column; gap: 10px; }
-.commitment-item { background: var(--bg); padding: 16px 20px; border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.2s; }
-.commitment-item:hover { border-color: var(--primary); }
-.expense-item { padding: 16px 18px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); }
-.font-semibold { font-weight: 600; }
-.font-medium { font-weight: 500; }
-.text-success { color: var(--success); }
-.text-danger { color: var(--danger); }
-.text-right { text-align: right; }
-.leading-relaxed { line-height: 1.6; }
-.fab { position: fixed; bottom: 32px; right: 32px; width: 56px; height: 56px; border-radius: 50%; background: var(--primary); color: white; border: none; font-size: 28px; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s; z-index: 50; }
-.fab:hover { transform: scale(1.05); }
-.fab:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; }
+.dashboard-layout { min-height: 100vh; padding-bottom: 80px; }
+
+/* Navbar */
+.navbar.app-navbar { padding: 0; }
+.navbar.app-navbar .container { padding: 0 24px; }
+
+/* Modal content box */
+.modal-content-box { width: 100%; max-width: 450px; }
+
+/* Card title */
+.card-title { font-size: 15px; font-weight: 600; }
+
+/* Commitments list */
+.commitments-list { display: flex; flex-direction: column; gap: 8px; }
 </style>

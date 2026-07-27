@@ -23,24 +23,22 @@ const handleCloseAnyway = () => {
 
 <template>
   <div v-if="store.showUnsavedModal" class="modal-backdrop">
-    <div class="base-card modal-content">
-      <h3 class="mb-2">Unsaved Changes</h3>
-      <p class="text-secondary mb-6 text-sm leading-relaxed">
+    <div class="app-card modal-box">
+      <h3 class="mb-3">Unsaved Changes</h3>
+      <p class="is-size-7 text-secondary mb-5" style="line-height: 1.6;">
         You have made modifications that haven't been exported to a CSV backup. What would you like to do?
       </p>
-      <div class="flex flex-col gap-3">
-        <button @click="handleExportCSVAndClose" class="btn-primary w-full">
+
+      <div class="is-flex is-flex-direction-column" style="gap: 10px;">
+        <button @click="handleExportCSVAndClose" class="button is-app-primary is-fullwidth">
           Export to CSV
         </button>
-        
-        <!-- Clean, explicitly centered button layout -->
-        <button @click="handleCloseAnyway" class="btn-danger-enhanced w-full">
-          <span class="btn-content-wrapper">
-            <span>Close Anyway (Discard)</span>
-          </span>
+
+        <button @click="handleCloseAnyway" class="button is-app-danger is-fullwidth">
+          Close Anyway (Discard)
         </button>
 
-        <button @click="store.showUnsavedModal = false" class="btn-secondary w-full">
+        <button @click="store.showUnsavedModal = false" class="button is-app-secondary is-fullwidth">
           Cancel
         </button>
       </div>
@@ -49,40 +47,8 @@ const handleCloseAnyway = () => {
 </template>
 
 <style scoped>
-.btn-danger-enhanced {
-  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.08), rgba(239, 68, 68, 0.15));
-  color: var(--danger);
-  border: 1px solid rgba(239, 68, 68, 0.35);
-  padding: 10px 16px;
-  border-radius: 8px;
-  font-weight: 500;
-  font-size: 14px;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 2px rgba(239, 68, 68, 0.05);
-  display: block;
+.modal-box {
   width: 100%;
-  text-align: center;
+  max-width: 420px;
 }
-
-.btn-content-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin: 0 auto;
-}
-
-.btn-danger-enhanced:hover {
-  background: linear-gradient(to bottom, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.25));
-  border-color: rgba(239, 68, 68, 0.6);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
-  transform: translateY(-1px);
-}
-
-.btn-danger-enhanced:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(239, 68, 68, 0.1);
-}
-
 </style>

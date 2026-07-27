@@ -23,49 +23,62 @@ const submit = () => {
 
 <template>
   <div class="modal-backdrop" @click.self="$emit('close')">
-    <div class="base-card modal-content">
-      <h3 class="mb-6">Add Fixed Expense</h3>
+    <div class="app-card modal-box">
+      <h3 class="mb-5">Add Fixed Expense</h3>
 
-      <form @submit.prevent="submit" class="grid gap-4">
-        <div>
-          <label class="block text-sm mb-2 text-secondary">Expense Name</label>
-          <input
-            v-model="name"
-            type="text"
-            placeholder="e.g. Rent, Gym, Internet, Water"
-            class="base-input"
-            required
-            autofocus
-          />
-        </div>
-
-        <div class="grid grid-2-col gap-4">
-          <div>
-            <label class="block text-sm mb-2 text-secondary">Expected Amount (R$)</label>
+      <form @submit.prevent="submit">
+        <!-- Expense Name -->
+        <div class="field">
+          <label class="label is-small text-secondary">Expense Name</label>
+          <div class="control">
             <input
-              v-model.number="expected"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              class="base-input"
+              v-model="name"
+              type="text"
+              placeholder="e.g. Rent, Gym, Internet, Water"
+              class="input is-small"
               required
-            />
-          </div>
-          <div>
-            <label class="block text-sm mb-2 text-secondary">Actual Amount (R$)</label>
-            <input
-              v-model.number="actual"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              class="base-input"
+              autofocus
             />
           </div>
         </div>
 
-        <div class="flex justify-between mt-6 gap-4">
-          <button type="button" @click="$emit('close')" class="btn-secondary w-full">Cancel</button>
-          <button type="submit" class="btn-primary w-full">Add Expense</button>
+        <!-- Amounts -->
+        <div class="columns is-mobile is-variable is-3">
+          <div class="column">
+            <div class="field">
+              <label class="label is-small text-secondary">Expected (R$)</label>
+              <div class="control">
+                <input
+                  v-model.number="expected"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  class="input is-small"
+                  required
+                />
+              </div>
+            </div>
+          </div>
+          <div class="column">
+            <div class="field">
+              <label class="label is-small text-secondary">Actual (R$)</label>
+              <div class="control">
+                <input
+                  v-model.number="actual"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  class="input is-small"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="buttons mt-5">
+          <button type="button" @click="$emit('close')" class="button is-app-secondary is-fullwidth">Cancel</button>
+          <button type="submit" class="button is-app-primary is-fullwidth">Add Expense</button>
         </div>
       </form>
     </div>
@@ -73,43 +86,13 @@ const submit = () => {
 </template>
 
 <style scoped>
-.modal-backdrop {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(17, 24, 39, 0.5);
-  backdrop-filter: blur(2px);
-  display: flex; align-items: center; justify-content: center;
-  z-index: 100;
+.modal-box {
+  width: 100%;
+  max-width: 440px;
 }
-.modal-content {
-  width: 100%; max-width: 440px;
-  padding: 24px;
-}
-.mb-6 { margin-bottom: 24px; }
-.mb-2 { margin-bottom: 8px; }
-.mt-6 { margin-top: 24px; }
-.block { display: block; }
-.w-full { width: 100%; }
-.grid-2-col { display: grid; grid-template-columns: 1fr 1fr; }
-
-.base-input {
-  border: 1px solid var(--border);
-  border-radius: 6px; padding: 8px 12px;
-  font-family: var(--font-sans); width: 100%;
-  background: var(--surface);
+.input {
+  font-family: var(--font-sans);
   color: var(--text-primary);
 }
-.base-input:focus { outline: none; border-color: var(--primary); }
-
-.btn-secondary {
-  background: var(--surface); color: var(--text-primary);
-  border: 1px solid var(--border); padding: 8px 16px;
-  border-radius: 6px; font-weight: 500; cursor: pointer;
-}
-.btn-secondary:hover { background: var(--bg); }
-.btn-primary {
-  background: var(--primary); color: white;
-  border: none; padding: 8px 16px;
-  border-radius: 6px; font-weight: 500; cursor: pointer;
-}
-.btn-primary:hover { opacity: 0.9; }
+.label { color: var(--text-secondary); font-weight: 500; }
 </style>

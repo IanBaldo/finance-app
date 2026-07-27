@@ -12,7 +12,7 @@ const store = useFinanceStore();
 
 const chartOption = computed(() => {
   const data = store.projection;
-  
+
   return {
     tooltip: {
       trigger: 'axis',
@@ -56,9 +56,9 @@ const chartOption = computed(() => {
       barWidth: '40%',
       data: data.map(d => ({
         value: (d as Record<string, any>)[card.id] || 0,
-        itemStyle: { 
-          color: card.color || '#2563eb', 
-          opacity: d.isCurrent ? 1 : 0.35 
+        itemStyle: {
+          color: card.color || '#2563eb',
+          opacity: d.isCurrent ? 1 : 0.35
         }
       }))
     }))
@@ -67,8 +67,8 @@ const chartOption = computed(() => {
 </script>
 
 <template>
-  <div class="base-card chart-container">
-    <h3 class="mb-6">6-Month Commitment Projection</h3>
+  <div class="app-card">
+    <h3 class="mb-5">6-Month Commitment Projection</h3>
     <div class="chart-wrapper">
       <v-chart class="chart" :option="chartOption" autoresize />
     </div>
@@ -76,15 +76,13 @@ const chartOption = computed(() => {
 </template>
 
 <style scoped>
-.chart-container { width: 100%; }
 .chart-wrapper {
   height: 300px;
   width: 100%;
   overflow-x: auto;
 }
 .chart {
-  min-width: 500px;
+  min-width: 480px;
   height: 100%;
 }
-.mb-6 { margin-bottom: 24px; }
 </style>

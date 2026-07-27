@@ -1,87 +1,87 @@
 <!-- src/components/KpiCards.vue -->
 <script setup lang="ts">
 import { useFinanceStore } from '../store/finance';
+import { formatBRL, formatBRLWhole } from '../utils/formatters';
+import FormattedNumberInput from './FormattedNumberInput.vue';
 
 const store = useFinanceStore();
 </script>
 
 <template>
-  <div class="kpi-grid">
-    <!-- Editable Current Balance -->
-    <div class="base-card kpi-card">
-      <span class="text-secondary text-sm">Current Balance (R$)</span>
-      <div class="kpi-value flex items-center">
-        <span class="text-secondary font-normal text-base mr-1">R$</span>
-        <input type="number" v-model.number="store.balance" class="kpi-input" />
-      </div>
-    </div>
-    
-    <div class="base-card kpi-card">
-      <span class="text-secondary text-sm">Monthly Income (R$)</span>
-      <div class="kpi-value flex items-center">
-        <span class="text-secondary font-normal text-base mr-1">R$</span>
-        <input type="number" v-model.number="store.income" class="kpi-input" />
+  <div class="columns is-multiline kpi-row">
+    <!-- Current Balance -->
+    <div class="column is-one-fifth-desktop is-half-tablet">
+      <div class="app-card kpi-card">
+        <p class="is-size-7 text-secondary mb-2">Current Balance (R$)</p>
+        <div class="kpi-value is-flex is-align-items-center">
+          <span class="is-size-6 text-secondary mr-1" style="font-weight: 400;">R$</span>
+          <FormattedNumberInput
+            v-model="store.balance"
+            class-name="kpi-input"
+          />
+        </div>
       </div>
     </div>
 
-    <div class="base-card kpi-card">
-      <span class="text-secondary text-sm">Committed</span>
-      <div class="kpi-value">{{ formatBRL(store.monthlyCommitments + store.fixedExpenses) }}</div>
+    <!-- Monthly Income -->
+    <div class="column is-one-fifth-desktop is-half-tablet">
+      <div class="app-card kpi-card">
+        <p class="is-size-7 text-secondary mb-2">Monthly Income (R$)</p>
+        <div class="kpi-value is-flex is-align-items-center">
+          <span class="is-size-6 text-secondary mr-1" style="font-weight: 400;">R$</span>
+          <FormattedNumberInput
+            v-model="store.income"
+            class-name="kpi-input"
+          />
+        </div>
+      </div>
     </div>
 
-    <div class="base-card kpi-card">
-      <span class="text-secondary text-sm">Available to Spend</span>
-      <div class="kpi-value text-primary">{{ formatBRL(store.availableToSpend) }}</div>
+    <!-- Committed -->
+    <div class="column is-one-fifth-desktop is-half-tablet">
+      <div class="app-card kpi-card">
+        <p class="is-size-7 text-secondary mb-2">Committed</p>
+        <div class="kpi-value">{{ formatBRLWhole(store.monthlyCommitments + store.fixedExpenses) }}</div>
+      </div>
     </div>
 
-    <div class="base-card kpi-card">
-      <span class="text-secondary text-sm">Savings Goal (R$)</span>
-      <div class="kpi-value flex items-center">
-        <span class="text-secondary font-normal text-base mr-1">R$</span>
-        <input type="number" v-model.number="store.savingsGoal" class="kpi-input" />
+    <!-- Available to Spend -->
+    <div class="column is-one-fifth-desktop is-half-tablet">
+      <div class="app-card kpi-card">
+        <p class="is-size-7 text-secondary mb-2">Available to Spend</p>
+        <div class="kpi-value text-primary-color">{{ formatBRLWhole(store.availableToSpend) }}</div>
+      </div>
+    </div>
+
+    <!-- Savings Goal -->
+    <div class="column is-one-fifth-desktop is-half-tablet">
+      <div class="app-card kpi-card">
+        <p class="is-size-7 text-secondary mb-2">Savings Goal (R$)</p>
+        <div class="kpi-value is-flex is-align-items-center">
+          <span class="is-size-6 text-secondary mr-1" style="font-weight: 400;">R$</span>
+          <FormattedNumberInput
+            v-model="store.savingsGoal"
+            class-name="kpi-input"
+          />
+        </div>
       </div>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { formatBRL } from '../utils/formatters';
-export default {
-  methods: { formatBRL }
-}
-</script>
-
 <style scoped>
-.kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-}
+.kpi-row { margin-bottom: 0; }
+
 .kpi-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
+  height: 100%;
 }
+
 .kpi-value {
   font-size: 24px;
   font-weight: 600;
   color: var(--text-primary);
-}
-.text-primary { color: var(--primary); }
-
-.kpi-input {
-  border: none;
-  border-bottom: 1px dashed var(--border);
-  font-size: 24px;
-  font-weight: 600;
-  color: var(--text-primary);
-  background: transparent;
-  width: 100%;
-  font-family: inherit;
-  padding: 0;
-}
-.kpi-input:focus {
-  outline: none;
-  border-bottom-color: var(--primary);
 }
 </style>
