@@ -18,28 +18,28 @@ const store = useFinanceStore();
       <div class="legend-item">
         <div class="dot fixed"></div>
         <div>
-          <div class="text-sm">Fixed Expenses</div>
+          <div class="text-sm">Fixed Expenses ({{formatPercent(store.fixedExpenses, store.income)}})</div>
           <div class="font-semibold">{{ formatBRL(store.fixedExpenses) }}</div>
         </div>
       </div>
       <div class="legend-item">
         <div class="dot credit"></div>
         <div>
-          <div class="text-sm">Credit Cards</div>
+          <div class="text-sm">Credit Cards ({{formatPercent(store.monthlyCommitments, store.income)}})</div>
           <div class="font-semibold">{{ formatBRL(store.monthlyCommitments) }}</div>
         </div>
       </div>
       <div class="legend-item">
         <div class="dot savings"></div>
         <div>
-          <div class="text-sm">Savings Goal</div>
+          <div class="text-sm">Savings Goal ({{formatPercent(store.savingsTargetAmount, store.income)}})</div>
           <div class="font-semibold">{{ formatBRL(store.savingsTargetAmount) }}</div>
         </div>
       </div>
       <div class="legend-item">
         <div class="dot available"></div>
         <div>
-          <div class="text-sm">Remaining Available</div>
+          <div class="text-sm">Remaining Available ({{formatPercent(store.availableToSpend - store.savingsTargetAmount, store.income)}})</div>
           <div class="font-semibold">{{ formatBRL(store.availableToSpend - store.savingsTargetAmount) }}</div>
         </div>
       </div>
