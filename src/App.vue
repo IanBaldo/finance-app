@@ -302,7 +302,6 @@ const handleFileUpload = (event: Event) => {
     <AddCardModal v-if="showAddCardModal" @close="showAddCardModal = false" />
     <AddExpenseModal v-if="showAddExpenseModal" @close="showAddExpenseModal = false" />
 
-    <button class="fab" @click="showModal = true" aria-label="Add Commitment">+</button>
     <AddCommitmentModal v-if="showModal" @close="showModal = false" />
   </div>
 </template>
