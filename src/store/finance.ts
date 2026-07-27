@@ -107,9 +107,8 @@ export const useFinanceStore = defineStore('finance', () => {
   });
 
   const monthlyCommitments = computed(() => {
-    const commitmentsTotal = Object.values(creditCommitments.value).reduce((a, b) => a + b, 0);
     const totalCardBalances = cards.value.reduce((acc, card) => acc + card.currentBalance, 0);
-    return commitmentsTotal + totalCardBalances;
+    return totalCardBalances;
   });
 
   const availableToSpend = computed(() =>
