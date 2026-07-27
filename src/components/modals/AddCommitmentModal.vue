@@ -1,7 +1,7 @@
 <!-- src/components/AddCommitmentModal.vue -->
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useFinanceStore } from '../store/finance';
+import { useFinanceStore } from '../../store/finance';
 
 const emit = defineEmits(['close']);
 const store = useFinanceStore();

@@ -5,11 +5,11 @@ import { useFinanceStore } from './store/finance';
 import KpiCards from './components/KpiCards.vue';
 import IncomeAllocation from './components/IncomeAllocation.vue';
 import ProjectionChart from './components/ProjectionChart.vue';
-import AddCommitmentModal from './components/AddCommitmentModal.vue';
-import UnsavedChangesModal from './components/UnsavedChangesModal.vue';
-import PasswordModal from './components/PasswordModal.vue';
-import AddCardModal from './components/AddCardModal.vue';
-import AddExpenseModal from './components/AddExpenseModal.vue';
+import AddCommitmentModal from './components/modals/AddCommitmentModal.vue';
+import UnsavedChangesModal from './components/modals/UnsavedChangesModal.vue';
+import PasswordModal from './components/modals/PasswordModal.vue';
+import AddCardModal from './components/modals/AddCardModal.vue';
+import AddExpenseModal from './components/modals/AddExpenseModal.vue';
 import { formatBRL } from './utils/formatters';
 import { isEncryptedFile, encryptCsv, decryptCsv } from './utils/crypto';
 

@@ -1,6 +1,6 @@
 <!-- src/components/UnsavedChangesModal.vue -->
 <script setup lang="ts">
-import { useFinanceStore } from '../store/finance';
+import { useFinanceStore } from '../../store/finance';
 
 const store = useFinanceStore();
 

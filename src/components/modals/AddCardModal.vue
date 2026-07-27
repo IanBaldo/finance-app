@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useFinanceStore } from '../store/finance';
+import { useFinanceStore } from '../../store/finance';
 
 const emit = defineEmits(['close', 'submit']);
 const store = useFinanceStore();
