@@ -27,16 +27,8 @@ export const useFinanceStore = defineStore('finance', () => {
       income: 0,
       balance: 0,
       savingsGoal: 0,
-      cards: [
-        { id: 'nubank', name: 'Nubank', currentBalance: 0, color: '#7C3AED' },
-        { id: 'santander', name: 'Santander', currentBalance: 0, color: '#EC5C5C' }
-      ],
-      expenses: [
-        { id: '1', name: 'Rent', expected: 0, actual: 0 },
-        { id: '2', name: 'Condo Fee', expected: 0, actual: 0 },
-        { id: '3', name: 'Electricity', expected: 0, actual: 0 },
-        { id: '4', name: 'Internet', expected: 0, actual: 0 }
-      ],
+      cards: [],
+      expenses: [],
       commitments: []
     }
   });
