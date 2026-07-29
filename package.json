@@ -1,7 +1,7 @@
 {
   "name": "finance-dashboard",
   "private": true,
-  "version": "26.7.26",
+  "version": "26.7.27",
   "type": "module",
   "main": "electron/main.cjs",
   "scripts": {
@@ -14,7 +14,7 @@
   "build": {
     "appId": "com.financial.planning",
     "productName": "Financial Planning",
-    "icon": "public/icon.ico",
+    "icon": "public/pig_logo.ico",
     "directories": {
       "output": "release"
     },
