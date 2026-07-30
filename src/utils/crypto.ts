@@ -36,7 +36,7 @@ async function deriveKey(password: string, salt: Uint8Array): Promise<CryptoKey>
   return window.crypto.subtle.deriveKey(
     {
       name: 'PBKDF2',
-      salt,
+      salt: salt as unknown as BufferSource,
       iterations: PBKDF2_ITERATIONS,
       hash: 'SHA-256'
     },
@@ -104,9 +104,9 @@ export async function decryptCsv(encryptedContent: string, password: string): Pr
     const key = await deriveKey(password, salt);
 
     const decryptedBuffer = await window.crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv },
+      { name: 'AES-GCM', iv: iv as BufferSource },
       key,
-      ciphertext
+      ciphertext as BufferSource
     );
 
     const decoder = new TextDecoder();
