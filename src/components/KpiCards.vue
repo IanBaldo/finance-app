@@ -1,7 +1,7 @@
 <!-- src/components/KpiCards.vue -->
 <script setup lang="ts">
 import { useFinanceStore } from '../store/finance';
-import { formatBRL, formatBRLWhole } from '../utils/formatters';
+import { formatBRLWhole } from '../utils/formatters';
 import FormattedNumberInput from './FormattedNumberInput.vue';
 
 const store = useFinanceStore();
