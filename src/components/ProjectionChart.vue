@@ -3,11 +3,11 @@ import { useFinanceStore } from '../store/finance';
 import { computed } from 'vue';
 import { use } from 'echarts/core';
 import { CanvasRenderer } from 'echarts/renderers';
-import { BarChart } from 'echarts/charts';
+import { LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent } from 'echarts/components';
 import VChart from 'vue-echarts';
 
-use([CanvasRenderer, BarChart, GridComponent, TooltipComponent]);
+use([CanvasRenderer, LineChart, GridComponent, TooltipComponent]);
 const store = useFinanceStore();
 
 const chartOption = computed(() => {
@@ -16,7 +16,7 @@ const chartOption = computed(() => {
   return {
     tooltip: {
       trigger: 'axis',
-      axisPointer: { type: 'shadow' },
+      axisPointer: { type: 'line' },
       backgroundColor: '#FFFFFF',
       borderColor: '#E5E7EB',
       textStyle: { color: '#111827', fontFamily: 'Inter' },
@@ -51,14 +51,19 @@ const chartOption = computed(() => {
     },
     series: store.cards.map(card => ({
       name: card.name,
-      type: 'bar',
-      stack: 'total',
-      barWidth: '40%',
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      lineStyle: { 
+        width: 3,
+        color: card.color
+      },
       data: data.map(d => ({
         value: (d as Record<string, any>)[card.id] || 0,
         itemStyle: {
-          color: card.color || '#2563eb',
-          opacity: d.isCurrent ? 1 : 0.35
+          color: card.color,
+          opacity: d.isCurrent ? 1 : 0.6
         }
       }))
     }))
