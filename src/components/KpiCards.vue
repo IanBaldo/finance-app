@@ -8,9 +8,9 @@ const store = useFinanceStore();
 </script>
 
 <template>
-  <div class="columns is-multiline kpi-row">
+  <div class="columns is-multiline is-mobile kpi-row">
     <!-- Current Balance -->
-    <div class="column is-one-fifth-desktop is-half-tablet">
+    <div class="column is-one-fifth-desktop is-full-tablet is-full-mobile">
       <div class="app-card kpi-card">
         <p class="is-size-7 text-secondary mb-2">Current Balance (R$)</p>
         <div class="kpi-value is-flex is-align-items-center">
@@ -24,7 +24,7 @@ const store = useFinanceStore();
     </div>
 
     <!-- Monthly Income -->
-    <div class="column is-one-fifth-desktop is-half-tablet">
+    <div class="column is-one-fifth-desktop is-half-tablet is-half-mobile">
       <div class="app-card kpi-card">
         <p class="is-size-7 text-secondary mb-2">Monthly Income (R$)</p>
         <div class="kpi-value is-flex is-align-items-center">
@@ -38,7 +38,7 @@ const store = useFinanceStore();
     </div>
 
     <!-- Committed -->
-    <div class="column is-one-fifth-desktop is-half-tablet">
+    <div class="column is-one-fifth-desktop is-half-tablet is-half-mobile">
       <div class="app-card kpi-card">
         <p class="is-size-7 text-secondary mb-2">Committed</p>
         <div class="kpi-value">{{ formatBRLWhole(store.monthlyCommitments + store.fixedExpenses) }}</div>
@@ -46,7 +46,7 @@ const store = useFinanceStore();
     </div>
 
     <!-- Available to Spend -->
-    <div class="column is-one-fifth-desktop is-half-tablet">
+    <div class="column is-one-fifth-desktop is-half-tablet is-half-mobile">
       <div class="app-card kpi-card">
         <p class="is-size-7 text-secondary mb-2">Available to Spend</p>
         <div class="kpi-value text-primary-color">{{ formatBRLWhole(store.availableToSpend) }}</div>
@@ -54,7 +54,7 @@ const store = useFinanceStore();
     </div>
 
     <!-- Savings Goal -->
-    <div class="column is-one-fifth-desktop is-half-tablet">
+    <div class="column is-one-fifth-desktop is-half-tablet is-half-mobile">
       <div class="app-card kpi-card">
         <p class="is-size-7 text-secondary mb-2">Savings Goal (R$)</p>
         <div class="kpi-value is-flex is-align-items-center">
