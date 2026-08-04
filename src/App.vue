@@ -235,11 +235,15 @@ const handleFileUpload = (event: Event) => {
             </div>
 
             <div class="expense-list">
-              <div v-for="exp in store.expenses" :key="exp.id" class="expense-item mb-3">
+              <div v-for="exp in store.expenses" :key="exp.id" class="expense-item mb-3" :class="{ 'is-paid': exp.paid }">
                 <div class="level is-mobile mb-2">
                   <div class="level-left">
                     <div class="level-item">
-                      <span class="has-text-weight-semibold mr-2">{{ exp.name }}</span>
+                      <label class="checkbox-wrapper mr-2">
+                        <input type="checkbox" v-model="exp.paid" @change="store.isDataSaved = false" class="checkbox-input" />
+                        <span class="custom-checkbox"></span>
+                      </label>
+                      <span class="has-text-weight-semibold mr-2 expense-name" :class="{ 'is-strikethrough': exp.paid }">{{ exp.name }}</span>
                       <button @click="store.deleteExpense(exp.id)" class="btn-icon-danger" style="font-size:16px; width:24px; height:24px;" title="Remove Expense">×</button>
                     </div>
                   </div>
@@ -259,11 +263,11 @@ const handleFileUpload = (event: Event) => {
                 <div class="columns is-mobile is-variable is-2">
                   <div class="column">
                     <label class="is-size-7 text-secondary mb-1" style="display:block;">Expected</label>
-                    <input type="number" v-model.number="exp.expected" class="inline-input" style="width:100%;" />
+                    <input type="number" v-model.number="exp.expected" @change="store.isDataSaved = false" class="inline-input" style="width:100%;" />
                   </div>
                   <div class="column">
                     <label class="is-size-7 text-secondary mb-1" style="display:block;">Actual</label>
-                    <input type="number" v-model.number="exp.actual" class="inline-input" style="width:100%;" />
+                    <input type="number" v-model.number="exp.actual" @change="store.isDataSaved = false" class="inline-input" style="width:100%;" />
                   </div>
                 </div>
               </div>
@@ -321,4 +325,58 @@ const handleFileUpload = (event: Event) => {
 
 /* Commitments list */
 .commitments-list { display: flex; flex-direction: column; gap: 8px; }
+
+/* Custom Checkbox */
+.checkbox-wrapper {
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+.custom-checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s ease;
+  background: var(--surface);
+}
+.checkbox-wrapper:hover .custom-checkbox {
+  border-color: var(--primary);
+}
+.checkbox-input:checked + .custom-checkbox {
+  background-color: var(--success);
+  border-color: var(--success);
+}
+.checkbox-input:checked + .custom-checkbox::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Strikethrough for paid items */
+.expense-name.is-strikethrough {
+  text-decoration: line-through;
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+/* Paid expense item background styling */
+.expense-item.is-paid {
+  background-color: #F8FAFC !important;
+}
 </style>

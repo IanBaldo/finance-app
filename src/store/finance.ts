@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 
 export interface Card { id: string; name: string; currentBalance: number; limit?: number; color?: string; }
-export interface Expense { id: string; name: string; expected: number; actual: number; }
+export interface Expense { id: string; name: string; expected: number; actual: number; paid: boolean; }
 export interface Commitment {
   id: string; description: string; cardId: string; purchaseDate: string;
   totalAmount: number; monthlyAmount: number; installments: number;
@@ -220,10 +220,13 @@ export const useFinanceStore = defineStore('finance', () => {
     }
   }
 
-  function addExpense(expense: Omit<Expense, 'id'>) {
+  function addExpense(expense: Omit<Expense, 'id' | 'paid'> & { paid?: boolean }) {
     expenses.value.push({
       id: Math.random().toString(36).substr(2, 9),
-      ...expense
+      name: expense.name,
+      expected: expense.expected,
+      actual: expense.actual,
+      paid: expense.paid ?? false
     });
     isDataSaved.value = false;
   }
@@ -252,7 +255,7 @@ export const useFinanceStore = defineStore('finance', () => {
       })
       .filter(c => c.recurring || c.currentInstallment <= c.installments);
 
-    const resetExpenses = expenses.value.map(e => ({ ...e, actual: e.expected }));
+    const resetExpenses = expenses.value.map(e => ({ ...e, actual: e.expected, paid: false }));
 
     const nextCards = JSON.parse(JSON.stringify(cards.value)) as Card[];
     nextCards.forEach(card => {
@@ -283,7 +286,7 @@ export const useFinanceStore = defineStore('finance', () => {
         rows.push([mKey, 'CARD', card.id, card.name, String(card.currentBalance), String(card.limit || 0), card.color || '', '']);
       });
       data.expenses.forEach(exp => {
-        rows.push([mKey, 'EXPENSE', exp.id, exp.name, String(exp.expected), String(exp.actual), '', '']);
+        rows.push([mKey, 'EXPENSE', exp.id, exp.name, String(exp.expected), String(exp.actual), String(exp.paid || false), '']);
       });
       data.commitments.forEach(c => {
         rows.push([mKey, 'COMMITMENT', c.id, c.description, String(c.totalAmount), String(c.monthlyAmount), `${c.cardId}|${c.currentInstallment}|${c.installments}`, String(c.recurring)]);
@@ -312,7 +315,7 @@ export const useFinanceStore = defineStore('finance', () => {
   }
 
   function importDataCSV(csvText: string) {
-    const lines = csvText.split('\n').map(l => l.split(','));
+    const lines = csvText.replace(/\r/g, '').split('\n').map(l => l.split(','));
     const newDb: typeof monthDatabase.value = {};
 
     lines.forEach(cols => {
@@ -331,7 +334,13 @@ export const useFinanceStore = defineStore('finance', () => {
       } else if (type === 'CARD') {
         newDb[mKey].cards.push({ id, name, currentBalance: Number(f1), limit: Number(f2), color: f3 || undefined });
       } else if (type === 'EXPENSE') {
-        newDb[mKey].expenses.push({ id, name, expected: Number(f1), actual: Number(f2) });
+        newDb[mKey].expenses.push({
+          id,
+          name,
+          expected: Number(f1) || 0,
+          actual: Number(f2) || 0,
+          paid: f3 === 'true'
+        });
       } else if (type === 'COMMITMENT') {
         const [cardId, currentInst, totalInst] = (f3 || '').split('|');
         newDb[mKey].commitments.push({
@@ -339,7 +348,7 @@ export const useFinanceStore = defineStore('finance', () => {
           description: name,
           totalAmount: Number(f1),
           monthlyAmount: Number(f2),
-          cardId: cardId || 'nubank',
+          cardId: cardId,
           currentInstallment: Number(currentInst) || 1,
           installments: Number(totalInst) || 1,
           recurring: f4 === 'true',
