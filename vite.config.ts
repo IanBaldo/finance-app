@@ -3,7 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: './finance-app/',
+  base: './',
   optimizeDeps: {
     include: ['vue', 'pinia', 'echarts', 'vue-echarts']
   }

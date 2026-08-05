@@ -39,25 +39,46 @@ onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
 });
 
-const handleExportClick = () => {
-  passwordModalMode.value = 'export';
-  passwordErrorMessage.value = '';
-  showPasswordModal.value = true;
+const uploadedFile = ref<File | null>(null);
+
+const handleSaveClick = async () => {
+  if (store.loadedFileInfo) {
+    const rawCsv = store.getCSVContent();
+    const { fileName, isEncrypted, password } = store.loadedFileInfo;
+    if (isEncrypted && password) {
+      try {
+        const encryptedContent = await encryptCsv(rawCsv, password);
+        store.downloadCSVFile(encryptedContent, fileName);
+      } catch (err: any) {
+        passwordErrorMessage.value = 'Failed to encrypt export file.';
+        console.error(err);
+      }
+    } else {
+      store.downloadCSVFile(rawCsv, fileName);
+    }
+  } else {
+    passwordModalMode.value = 'export';
+    passwordErrorMessage.value = '';
+    showPasswordModal.value = true;
+  }
 };
 
 const handlePasswordSubmit = async ({ password, isEncrypted }: { password: string; isEncrypted: boolean }) => {
   if (passwordModalMode.value === 'export') {
     const rawCsv = store.getCSVContent();
+    const defaultFileName = isEncrypted ? 'financial_database_encrypted.csv' : 'financial_database.csv';
     if (isEncrypted && password) {
       try {
         const encryptedContent = await encryptCsv(rawCsv, password);
-        store.downloadCSVFile(encryptedContent, 'financial_database_encrypted.csv');
+        store.downloadCSVFile(encryptedContent, defaultFileName);
+        store.loadedFileInfo = { fileName: defaultFileName, isEncrypted: true, password };
         showPasswordModal.value = false;
       } catch (err: any) {
         passwordErrorMessage.value = 'Failed to encrypt export file.';
       }
     } else {
-      store.exportDataCSV();
+      store.downloadCSVFile(rawCsv, defaultFileName);
+      store.loadedFileInfo = { fileName: defaultFileName, isEncrypted: false };
       showPasswordModal.value = false;
     }
   } else {
@@ -65,7 +86,11 @@ const handlePasswordSubmit = async ({ password, isEncrypted }: { password: strin
     try {
       passwordErrorMessage.value = '';
       const decryptedCsv = await decryptCsv(pendingImportContent.value, password);
-      store.importDataCSV(decryptedCsv);
+      store.importDataCSV(decryptedCsv, {
+        fileName: uploadedFile.value?.name || 'financial_database_encrypted.csv',
+        isEncrypted: true,
+        password
+      });
       showPasswordModal.value = false;
       pendingImportContent.value = '';
     } catch (err: any) {
@@ -77,6 +102,8 @@ const handlePasswordSubmit = async ({ password, isEncrypted }: { password: strin
 const handleFileUpload = (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (target.files && target.files[0]) {
+    const file = target.files[0];
+    uploadedFile.value = file;
     const reader = new FileReader();
     reader.onload = (e) => {
       if (e.target?.result) {
@@ -87,12 +114,15 @@ const handleFileUpload = (event: Event) => {
           passwordErrorMessage.value = '';
           showPasswordModal.value = true;
         } else {
-          store.importDataCSV(content);
+          store.importDataCSV(content, {
+            fileName: file.name,
+            isEncrypted: false
+          });
         }
       }
       target.value = '';
     };
-    reader.readAsText(target.files[0]);
+    reader.readAsText(file);
   }
 };
 </script>
@@ -120,7 +150,7 @@ const handleFileUpload = (event: Event) => {
             </div>
 
             <button @click="showCloseConfirm = true" class="button is-small is-app-secondary">Close Month</button>
-            <button @click="handleExportClick" class="button is-small is-app-secondary">Export Data</button>
+            <button @click="handleSaveClick" class="button is-small is-app-secondary">Save</button>
             <button @click="fileInputRef?.click()" class="button is-small is-app-secondary">Import CSV</button>
             <input type="file" ref="fileInputRef" @change="handleFileUpload" accept=".csv" style="display: none;" />
           </div>

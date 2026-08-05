@@ -314,7 +314,15 @@ export const useFinanceStore = defineStore('finance', () => {
     downloadCSVFile(csvContent, 'financial_database.csv');
   }
 
-  function importDataCSV(csvText: string) {
+  interface LoadedFileInfo {
+    fileName: string;
+    isEncrypted: boolean;
+    password?: string;
+  }
+
+  const loadedFileInfo = ref<LoadedFileInfo | null>(null);
+
+  function importDataCSV(csvText: string, fileInfo?: LoadedFileInfo) {
     const lines = csvText.replace(/\r/g, '').split('\n').map(l => l.split(','));
     const newDb: typeof monthDatabase.value = {};
 
@@ -361,6 +369,7 @@ export const useFinanceStore = defineStore('finance', () => {
       monthDatabase.value = newDb;
       const keys = Object.keys(newDb).sort();
       activeMonthKey.value = keys[keys.length - 1];
+      loadedFileInfo.value = fileInfo || null;
       isDataSaved.value = true;
     }
   }
@@ -369,6 +378,7 @@ export const useFinanceStore = defineStore('finance', () => {
     activeMonthKey, availableMonths, currentMonthLabel, income, balance, cards, expenses, commitments, savingsGoal,
     fixedExpenses, creditCommitments, monthlyCommitments,
     availableToSpend, savingsTargetAmount, expectedBalance, projection, isDataSaved, showUnsavedModal,
+    loadedFileInfo,
     addCommitment, deleteCommitment, addCard, deleteCard, addExpense, deleteExpense, closeMonth, exportDataCSV, importDataCSV, updateCardBalance,
     getCSVContent, downloadCSVFile
   };
